@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>College Predictor | Free MCC Guidance</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 500px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+    h1 {
+      font-size: 20px;
+      text-align: center;
+      color: #1a4fa3;
+    }
+    label {
+      display: block;
+      margin-top: 15px;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      font-size: 14px;
+    }
+    button {
+      margin-top: 20px;
+      background: #1a4fa3;
+      color: #ffffff;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    button:hover {
+      background: #163f82;
+    }
+    .loading {
+      text-align: center;
+      margin-top: 15px;
+      color: #555;
+    }
+    .results {
+      margin-top: 20px;
+    }
+    .result-item {
+      background: #eef3ff;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .error {
+      color: red;
+      margin-top: 15px;
+      text-align: center;
+    }
+    .disclaimer {
+      font-size: 12px;
+      color: #666;
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Free MCC College Predictor</h1>
+
+    <label for="rank">AIR Rank</label>
+    <input type="number" id="rank" placeholder="Enter your AIR rank" />
+
+    <label for="category">Category</label>
+    <select id="category">
+      <option value="">Select category</option>
+      <option value="GEN">General</option>
+      <option value="OBC">OBC</option>
+      <option value="SC">SC</option>
+      <option value="ST">ST</option>
+      <option value="EWS">EWS</option>
+    </select>
+
+    <button onclick="checkColleges()">Check Possible Colleges</button>
+
+    <div class="loading" id="loading" style="display:none;">Checking...</div>
+    <div class="error" id="error"></div>
+    <div class="results" id="results"></div>
+
+    <div class="disclaimer">
+      This tool uses previous year MCC counselling data.<br/>
+      Results are indicative and not guaranteed.
+    </div>
+  </div>
+
+  <script>
+    async function checkColleges() {
+      const rank = document.getElementById("rank").value;
+      const category = document.getElementById("category").value;
+
+      const loading = document.getElementById("loading");
+      const error = document.getElementById("error");
+      const results = document.getElementById("results");
+
+      error.innerText = "";
+      results.innerHTML = "";
+
+      if (!rank || !category) {
+        error.innerText = "Please enter rank and select category.";
+        return;
+      }
+
+      loading.style.display = "block";
+
+      try {
+        const response = await fetch("YOUR_N8N_WEBHOOK_URL_HERE", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            rank: Number(rank),
+            category: category
+          })
+        });
+
+        const data = await response.json();
+
+        loading.style.display = "none";
+
+        if (!data.results || data.results.length === 0) {
+          results.innerHTML = "<p>No colleges found for this rank.</p>";
+          return;
+        }
+
+        data.results.forEach(item => {
+          const div = document.createElement("div");
+          div.className = "result-item";
+          div.innerHTML = `
+            <strong>${item.college}</strong><br/>
+            Course: ${item.course}<br/>
+            Closing Rank: ${item.closingRank}
+          `;
+          results.appendChild(div);
+        });
+
+      } catch (err) {
+        loading.style.display = "none";
+        error.innerText = "Something went wrong. Please try again later.";
+      }
+    }
+  </script>
+</body>
+</html>
